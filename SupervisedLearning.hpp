@@ -104,6 +104,7 @@ std::pair<T, Matrix<T, COLS, 1>>  gradient_descent(Matrix<T,ROWS,COLS>& X,const 
             std::cout << " COST at " << i << " " << J_history.at(i) <<std::endl; 
         }
     }
+
     std::pair<T, Matrix<T, COLS, 1>> linearRegressionParameters(b_copy, std::move(w_copy));
     return linearRegressionParameters;
 
@@ -160,43 +161,5 @@ std::tuple<Matrix<T,ROWS,COLS>, Matrix<T,1,COLS>, Matrix<T,1,COLS>> zscore_norma
     return std::make_tuple(Xnormalized, mean, stdDev);
 
 }
-
-
-/******  CLASSIFICATION ************/
-template<typename T, size_t ROWS, size_t COLS>
-Matrix<T,ROWS,COLS> sigmoid(const Matrix<T,ROWS,COLS>& other){
-    Matrix<T,ROWS,COLS> sigmoid_;
-    for(size_t i=0;i<ROWS;++i){
-        for(size_t j=0;j<COLS;++j){
-                sigmoid_.at(i,j) = 1/(1+ exp(-other.at(i,j)));
-        }
-    } 
-    return sigmoid_;
-}
-
-template<typename T, size_t ROWS, size_t COLS>
-Matrix<T,ROWS,1>  sigmoidFunction(const Matrix<T,ROWS,COLS>& other,const Matrix<T,COLS,1>& w, T b){
-    return sigmoid(other*w+b);
-}
-
-template<typename T, size_t ROWS, size_t COLS>
-T compute_loss(Matrix<T,ROWS,COLS>& X,const Matrix<T,ROWS,1>& y,const Matrix<T,COLS,1>& w, T b){
-
-    //𝑙𝑜𝑠𝑠(𝑓𝐰,𝑏(𝐱(𝑖)),𝑦(𝑖))=(−𝑦(𝑖)log(𝑓𝐰,𝑏(𝐱(𝑖)))−(1−𝑦(𝑖))log(1−𝑓𝐰,𝑏(𝐱(𝑖))
-    //std::log()
-    // CHECK values of y they must either 1 or 0 no other value is accepted
-
-    T loss;
-    Matrix<T,ROWS,1> sigmoidMatrix = sigmoidFunction(X,w,b); //#TODO here are two FORS optimize!
-
-    for(size_t i=0;i<ROWS;++i){
-        //} //#TODO check y is 1 or zero 
-        loss += -y.at(i,0)*std::log(sigmoidMatrix.at(i,0))-(1-y.at(i,0))*(std::log(1-sigmoidMatrix.at(i,0)));
-
-    } 
-    loss/= static_cast<T>(ROWS);
-    return loss;
-}
-
 
 #endif 

@@ -7,6 +7,7 @@
 #include "data.hpp"
 #include <tuple>
 #include "SupervisedLearning.hpp"
+#include "Classification.hpp"
 
 using namespace robotics;
 
@@ -91,10 +92,51 @@ int main()
     //double itsLoss = compute_loss(X_train_lg,y_train_lg,w_tmp,b_tmp);
     //double itsLoss_4 = compute_loss(X_train_lg,y_train_lg,w_tmp,-4.0);
 
-    std::cout << "loss -3 " << compute_loss(X_train_lg,y_train_lg,w_tmp,-3.0) << std::endl;
-    std::cout << "loss -4 " << compute_loss(X_train_lg,y_train_lg,w_tmp,-4.0) << std::endl;
+    std::cout << "loss -3 " << classification::compute_loss(X_train_lg,y_train_lg,w_tmp,-3.0) << std::endl;
+    std::cout << "loss -4 " << classification::compute_loss(X_train_lg,y_train_lg,w_tmp,-4.0) << std::endl;
 
+// X_tmp = np.array([[0.5, 1.5], [1,1], [1.5, 0.5], [3, 0.5], [2, 2], [1, 2.5]])
+// y_tmp = np.array([0, 0, 0, 1, 1, 1])
+// w_tmp = np.array([2.,3.])
+// b_tmp = 1.
 
+    w_tmp = {{2.0},{3.0}};
+    double b_tmp = 1;
+
+    auto gradientValues = classification::compute_gradient(X_train_lg,y_train_lg,w_tmp,b_tmp);
+
+    std::cout << " gradient dj_db" << std::endl;
+    std::cout << gradientValues.first << std::endl;
+    //std::cout << gradientValues.second << std::endl;
+
+    std::cout << " gradient dj_dw" << std::endl;
+    std::cout << gradientValues.second << std::endl;
+
+    w_tmp = {{0.0},{0.0}};
+    b_tmp = 0.0;
+    double alpha_lg = 0.1;
+    double iters = 10000;
+
+    auto gradientValues_lg = classification::gradient_descent(X_train_lg,y_train_lg,w_tmp,b_tmp,alpha_lg,iters);
+
+    std::cout << " gradientValues_lg " << std::endl;
+    std::cout << gradientValues_lg.first << std::endl;
+    //std::cout << gradientValues.second << std::endl;
+
+    std::cout << " gradientValues_lg " << std::endl;
+    std::cout << gradientValues_lg.second << std::endl; 
+
+    // probability equal 0.5 = 1(1+e^(x*w+b))  BOUNDARY LINE
+    // 1=e^(x*w+b)
+    // X*w+b=0
+    // for x1=0 ->  x2=b/w // the same for x2
+    double x2= - gradientValues_lg.first/gradientValues_lg.second.at(1,0);
+    double x1= - gradientValues_lg.first/gradientValues_lg.second.at(0,0);
+
+    std::cout << " x1 "<<  x1 << std::endl;
+    std::cout << " x2 "<<  x2 << std::endl;
+
+    std::cout << classification::sigmoidFunction(X_train_lg,gradientValues_lg.second,gradientValues_lg.first) << std::endl;
     return 0;  
 
 }
