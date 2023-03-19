@@ -42,6 +42,31 @@ namespace classification{
     }
 
     template<typename T, size_t ROWS, size_t COLS>
+    T compute_loss_reg(Matrix<T,ROWS,COLS>& X,const Matrix<T,ROWS,1>& y,const Matrix<T,COLS,1>& w, T b, T lambda=1.0){
+
+        //𝑙𝑜𝑠𝑠(𝑓𝐰,𝑏(𝐱(𝑖)),𝑦(𝑖))=(−𝑦(𝑖)log(𝑓𝐰,𝑏(𝐱(𝑖)))−(1−𝑦(𝑖))log(1−𝑓𝐰,𝑏(𝐱(𝑖))
+        //std::log()
+        // CHECK values of y they must either 1 or 0 no other value is accepted
+
+        T loss;
+        Matrix<T,ROWS,1> sigmoidMatrix = sigmoidFunction(X,w,b); //#TODO here are two FORS optimize!
+
+        for(size_t i=0;i<ROWS;++i){
+            //} //#TODO check y is 1 or zero 
+            loss += -y.at(i,0)*std::log(sigmoidMatrix.at(i,0))-(1-y.at(i,0))*(std::log(1-sigmoidMatrix.at(i,0)));
+
+        } 
+        loss/= static_cast<T>(ROWS); // only ROWS 
+
+        Matrix<T,1,1> regularization_term = (w.getTransposed()*w)*(lambda)/(static_cast<T>(2*ROWS));
+
+
+        return loss+regularization_term.at(0,0);
+    }
+
+
+
+    template<typename T, size_t ROWS, size_t COLS>
     std::pair<T, Matrix<T, COLS, 1>> compute_gradient(Matrix<T,ROWS,COLS>& X,const Matrix<T,ROWS,1>& y,const Matrix<T,COLS,1>& w, T b){
         /*
             """
@@ -65,10 +90,29 @@ namespace classification{
 
         std::pair<T, Matrix<T, COLS, 1>> gradientDescentParameters(DJ_DB.at(0,0), std::move(DJ_DW));
 
-    return gradientDescentParameters;
+        return gradientDescentParameters;
 
 
     }   
+
+
+    template<typename T, size_t ROWS, size_t COLS>
+    std::pair<T, Matrix<T, COLS, 1>> compute_gradient_reg(Matrix<T,ROWS,COLS>& X,const Matrix<T,ROWS,1>& y,const Matrix<T,COLS,1>& w, T b, T lambda=1.0){
+
+        T rows_T = static_cast<T>(ROWS);
+        Matrix<T,ROWS,1> sigmoidMatrix = sigmoidFunction(X,w,b); // #TODO too many foor loops maybe a way to optimize in only one loop or for each for parallelism
+        Matrix<T,ROWS,1> matrix_error = sigmoidMatrix-y;
+        Matrix<T, COLS, 1> DJ_DW = (( X.getTransposed() )* matrix_error)/rows_T;
+
+        DJ_DW += w*lambda/rows_T;
+
+        auto DJ_DB = ( ( Matrix<double,1,ROWS>(1) )* matrix_error ) / rows_T;
+
+        std::pair<T, Matrix<T, COLS, 1>> gradientDescentParameters(DJ_DB.at(0,0), std::move(DJ_DW));
+
+        return gradientDescentParameters;
+
+    }
 
 
     template<typename T, size_t ROWS, size_t COLS>

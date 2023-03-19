@@ -30,12 +30,29 @@ T compute_cost(Matrix<T,ROWS,COLS>& X,const Matrix<T,ROWS,1>& y,const Matrix<T,C
     for (size_t row_idx=0;row_idx<matrix_error.getRows();++row_idx){
         cost +=  std::pow(matrix_error.at(row_idx,0), 2);
     }
-    return cost/(2*ROWS);
+    return cost/static_cast<T>(2*ROWS);
+}
+
+/*adding regularization*/
+template<typename T, size_t ROWS, size_t COLS>
+T compute_cost_reg(Matrix<T,ROWS,COLS>& X,const Matrix<T,ROWS,1>& y,const Matrix<T,COLS,1>& w, T b, T lambda=1.0){
+    T cost;
+    Matrix<T,ROWS,1> matrix_error = X*w+b-y;
+
+    for (size_t row_idx=0;row_idx<matrix_error.getRows();++row_idx){
+        cost +=  std::pow(matrix_error.at(row_idx,0), 2);
+    }
+    cost/=static_cast<T>(2*ROWS);
+
+    auto regularization_term = (w.getTransposed()*w)*(lambda)/(static_cast<T>(2*ROWS));
+    
+
+    return cost+regularization_term.at(0,0);
 }
 
 
 template<typename T, size_t ROWS, size_t COLS>
-std::pair<T, robotics::Matrix<T, COLS, 1>> compute_gradient(robotics::Matrix<T,ROWS,COLS>& X,const robotics::Matrix<T,ROWS,1>& y,const robotics::Matrix<T,COLS,1>& w, T b){
+std::pair<T, robotics::Matrix<T, COLS, 1>> compute_gradient(Matrix<T,ROWS,COLS>& X,const Matrix<T,ROWS,1>& y,const Matrix<T,COLS,1>& w, T b){
     /*
         """
         Computes the gradient for linear regression
@@ -50,17 +67,33 @@ std::pair<T, robotics::Matrix<T, COLS, 1>> compute_gradient(robotics::Matrix<T,R
         """
     */
     
-    robotics::Matrix<T,ROWS,1> matrix_error = X*w+b-y;
-    robotics::Matrix<T, COLS, 1> DJ_DW = (( X.getTransposed() )* matrix_error)/static_cast<T>(ROWS);
+    Matrix<T,ROWS,1> matrix_error = X*w+b-y;
+    Matrix<T, COLS, 1> DJ_DW = (( X.getTransposed() )* matrix_error)/static_cast<T>(ROWS);
 
-    auto DJ_DB = ( ( robotics::Matrix<double,1,ROWS>(1) )* matrix_error ) / static_cast<T>(ROWS);
+    auto DJ_DB = ( ( Matrix<double,1,ROWS>(1) )* matrix_error ) / static_cast<T>(ROWS);
 
-    std::pair<T, robotics::Matrix<T, COLS, 1>> gradientDescentParameters(DJ_DB.at(0,0), std::move(DJ_DW));
+    std::pair<T, Matrix<T, COLS, 1>> gradientDescentParameters(DJ_DB.at(0,0), std::move(DJ_DW));
 
    return gradientDescentParameters;
 
+}
+
+template<typename T, size_t ROWS, size_t COLS>
+std::pair<T, robotics::Matrix<T, COLS, 1>> compute_gradient_reg(Matrix<T,ROWS,COLS>& X,const Matrix<T,ROWS,1>& y,const Matrix<T,COLS,1>& w, T b, T lambda =1.0){
+    
+    T rows_T = static_cast<T>(ROWS);
+    Matrix<T,ROWS,1> matrix_error = X*w+b-y;
+    Matrix<T, COLS, 1> DJ_DW = (( X.getTransposed() )* matrix_error)/rows_T;
+
+    DJ_DW += w*lambda/rows_T;
+
+    auto DJ_DB = ( ( robotics::Matrix<double,1,ROWS>(1) )* matrix_error ) / rows_T;
+    std::pair<T, robotics::Matrix<T, COLS, 1>> gradientDescentParameters(DJ_DB.at(0,0), std::move(DJ_DW));
+
+    return gradientDescentParameters;
 
 }
+
 
 
 template<typename T, size_t ROWS, size_t COLS, typename lambdaComputeCost, typename lambdaComputeGradient>

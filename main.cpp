@@ -51,7 +51,9 @@ int main()
     std::cout << " gradientDescentParameters.second b " << std::endl;
     std::cout << gradientDescentParameters.first << std::endl;
 
-    std::cout << " prediction " << std::endl;
+    // Optional Lab_ Multiple linear regression PDF
+    //_ Courseraexpected values 426.185,286.167 ,171.468
+    std::cout << " prediction " << std::endl; 
     std::cout <<   X_train*gradientDescentParameters.second + gradientDescentParameters.first << std::endl;
     
     std::cout << " target value  " << std::endl;
@@ -74,10 +76,10 @@ int main()
     Matrix<double, 1, 4> X_house({{1200, 3, 1, 40}});
     auto X_house_norm = (X_house-mean)/stdDev;
     std::cout << " X_house_norm " << std::endl;
-    std::cout << X_house_norm << std::endl;
+    std::cout << X_house_norm << std::endl; // expected -0.530851 0.433809 -0.789272 0.0626957 
     auto x_house_predicted = X_house_norm*gDP.second+gDP.first;
     x_house_predicted*=1000;
-    std::cout << " predicted price " << std::endl;
+    std::cout << " predicted price " << std::endl; // expected 318709
     std::cout << x_house_predicted<< std::endl;
     
 
@@ -136,7 +138,27 @@ int main()
     std::cout << " x1 "<<  x1 << std::endl;
     std::cout << " x2 "<<  x2 << std::endl;
 
-    std::cout << classification::sigmoidFunction(X_train_lg,gradientValues_lg.second,gradientValues_lg.first) << std::endl;
+    //std::cout << classification::sigmoidFunction(X_train_lg,gradientValues_lg.second,gradientValues_lg.first) << std::endl;
+
+    /****REGULARIZATION***/
+    std::cout << " regularization cost" << compute_cost_reg(X_train_reg,y_train_reg,w_reg,b_reg,lambda_reg) << std::endl;
+    std::cout << " regularization cost" << classification::compute_loss_reg(X_train_reg,y_train_reg,w_reg,b_reg,lambda_reg) << std::endl;
+
+    auto gradientValues_reg = compute_gradient_reg(X_reg,y_train_reg,w_reg_2,b_reg,lambda_reg);
+    std::cout << " gradient dj_db" << std::endl;
+    std::cout << gradientValues_reg.first << std::endl; // expected 0.6648774569425726
+    std::cout << " gradient dj_dw" << std::endl;
+    std::cout << gradientValues_reg.second << std::endl; // expected [0.29653214748822276, 0.4911679625918033, 0.21645877535865857]
+    
+
+    auto gradientValues_log_reg = classification::compute_gradient_reg(X_reg,y_train_reg,w_reg_2,b_reg,lambda_reg);
+    std::cout << " gradient dj_db LOG" << std::endl;
+    std::cout << gradientValues_log_reg.first << std::endl; // expected 0.6648774569425726
+    std::cout << " gradient dj_dw LOG" << std::endl;
+    std::cout << gradientValues_log_reg.second << std::endl; // expected [0.29653214748822276, 0.4911679625918033, 0.21645877535865857]
+    
+
+
     return 0;  
 
 }

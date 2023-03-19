@@ -452,12 +452,15 @@ namespace robotics{
                 data[0][0]*=scalar;
                 return *this;
             }
-
-
-
             Matrix<T,1,1> operator+(T scalar) const{
                 return Matrix<T,1,1>(*this)+=scalar;
             }
+
+            // Binary arithmetic operators 
+            Matrix<T,1,1> operator*(T scalar)const{
+                return Matrix<T,1,1>(*this)*=scalar;
+            }
+
 
             T& at(size_t row, size_t col){
                 return data[row][col];
